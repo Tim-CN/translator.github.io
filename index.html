@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玛卡巴卡翻译工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main {
+            padding: 30px;
+        }
+        
+        .input-group, .output-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            padding-right: 45px;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #2575fc;
+        }
+        
+        .options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .option {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .encrypt-btn {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+        }
+        
+        .decrypt-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+        
+        .url-btn {
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .output {
+            background-color: #f8f9fa;
+            min-height: 120px;
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            padding-right: 45px;
+        }
+        
+        .url-output {
+            background-color: #e8f4fc;
+            font-size: 0.9rem;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        
+        .maka-baka {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #6a11cb;
+            font-weight: bold;
+            gap: 10px;
+        }
+        
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #2575fc;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .instructions code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .options {
+                flex-direction: column;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* 新增样式：自定义字符输入 */
+        .chars-input {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .chars-input input {
+            flex: 1;
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 8px;
+        }
+        
+        .reset-chars {
+            margin-top: 8px;
+            padding: 5px 10px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>玛卡巴卡翻译工具</h1>
+            <div class="subtitle">将文本转换为玛卡巴卡密文，支持所有语言和URL参数 作者：ZZX</div>
+        </header>
+        
+        <div class="main">
+            <div class="input-group">
+                <label for="inputText">输入文本（支持中英文等所有语言）:</label>
+                <textarea id="inputText" placeholder="请输入要加密或解密的文本..."></textarea>
+                <button class="copy-btn" onclick="copyInputText()">复制</button>
+            </div>
+            
+            <div class="options">
+                <div class="option">
+                    <label for="key">密钥（可选）:</label>
+                    <input type="text" id="key" placeholder="输入自定义密钥（可选）">
+                </div>
+                <div class="option">
+                    <label for="mode">模式:</label>
+                    <select id="mode">
+                        <option value="default">默认编译</option>
+                        <option value="custom">密钥编译</option>
+                    </select>
+                </div>
+                <div class="option">
+                    <label>自定义字符（可选，必须5个不同字符）:</label>
+                    <div class="chars-input">
+                        <input type="text" id="char0" maxlength="1" value="玛">
+                        <input type="text" id="char1" maxlength="1" value="卡">
+                        <input type="text" id="char2" maxlength="1" value="巴">
+                        <input type="text" id="char3" maxlength="1" value="哈">
+                        <input type="text" id="char4" maxlength="1" value="米">
+                    </div>
+                    <button class="reset-chars" onclick="resetChars()">重置为默认字符</button>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="encrypt-btn" onclick="encrypt()">加密</button>
+                <button class="decrypt-btn" onclick="decrypt()">解密</button>
+                <button class="url-btn" onclick="generateURL()">生成分享URL</button>
+            </div>
+            
+            <div class="output-group">
+                <label for="outputText">结果:</label>
+                <div id="outputText" class="output">加密或解密后的文本将显示在这里...</div>
+                <button class="copy-btn" onclick="copyOutputText()">复制</button>
+                
+                <div id="urlOutput" class="url-output" style="display: none;">
+                    <strong>分享URL:</strong> <span id="generatedURL"></span>
+                </div>
+            </div>
+            
+            <div class="maka-baka">
+                <span>玛</span>
+                <span>卡</span>
+                <span>巴</span>
+                <span>卡</span>
+                <span>哈</span>
+                <span>米</span>
+            </div>
+            
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ul>
+                    <li>输入任何语言的文本（中文、英文等）</li>
+                    <li>选择使用默认编译或密钥编译方式</li>
+                    <li>点击"加密"按钮进行加密</li>
+                    <li>点击"解密"按钮进行解密</li>
+                    <li>密钥可以是任何语言的文本，不设置则使用默认密钥</li>
+                    <li>支持自定义字符集（必须5个不同字符，出现相同字符时将忽略，用默认字符加/解密）</li>
+                    <li>密文包含以下字符：玛、卡、巴、哈、米（或自定义字符）</li>
+                    <li>支持URL参数：
+                        <ul>
+                            <li><code>ciphertext='xxx'</code> - 直接加载密文</li>
+                            <li><code>plaintext='xxx'</code> - 直接加载明文</li>
+                            <li><code>key='xxx'</code> - 设置密钥</li>
+                            <li><code>mode='default'</code> 或 <code>mode='custom'</code> - 设置模式</li>
+                            <li><code>char='xxxxx'</code> - 设置自定义字符（5个字符）</li>
+                        </ul>
+                    </li>
+                    <li>作者：ZZX</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
+
+    <script>
+        // 默认玛卡巴卡字符集
+        const DEFAULT_MAKA_CHARS = ['玛', '卡', '巴', '哈', '米'];
+        
+        // 默认密钥
+        const DEFAULT_KEY = '玛卡巴卡';
+        
+        // 获取当前字符集
+        function getMakaChars() {
+            const chars = [
+                document.getElementById('char0').value,
+                document.getElementById('char1').value,
+                document.getElementById('char2').value,
+                document.getElementById('char3').value,
+                document.getElementById('char4').value
+            ];
+            
+            // 验证字符集是否有效（5个不同字符）
+            const uniqueChars = new Set(chars);
+            if (chars.length !== 5 || uniqueChars.size !== 5) {
+                return DEFAULT_MAKA_CHARS;
+            }
+            
+            return chars;
+        }
+        
+        // 重置字符集为默认值
+        function resetChars() {
+            document.getElementById('char0').value = '玛';
+            document.getElementById('char1').value = '卡';
+            document.getElementById('char2').value = '巴';
+            document.getElementById('char3').value = '哈';
+            document.getElementById('char4').value = '米';
+        }
+        
+        // 显示提示信息
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 复制输入框文本
+        function copyInputText() {
+            const inputText = document.getElementById('inputText');
+            inputText.select();
+            
+            try {
+                navigator.clipboard.writeText(inputText.value).then(() => {
+                    showToast('已复制文本到剪贴板');
+                }).catch(err => {
+                    // 降级方案
+                    document.execCommand('copy');
+                    showToast('已复制文本到剪贴板');
+                });
+            } catch (err) {
+                // 降级方案
+                document.execCommand('copy');
+                showToast('已复制文本到剪贴板');
+            }
+        }
+        
+        // 复制输出框文本
+        function copyOutputText() {
+            const outputText = document.getElementById('outputText');
+            
+            // 创建一个临时文本区域来保存文本
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = outputText.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                navigator.clipboard.writeText(tempTextArea.value).then(() => {
+                    showToast('已复制文本到剪贴板');
+                }).catch(err => {
+                    // 降级方案
+                    document.execCommand('copy');
+                    showToast('已复制文本到剪贴板');
+                });
+            } catch (err) {
+                // 降级方案
+                document.execCommand('copy');
+                showToast('已复制文本到剪贴板');
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+        
+        // 页面加载时解析URL参数
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const ciphertext = urlParams.get('ciphertext');
+            const plaintext = urlParams.get('plaintext');
+            const key = urlParams.get('key');
+            const mode = urlParams.get('mode');
+            const chars = urlParams.get('char');
+            
+            // 处理自定义字符参数
+            if (chars && chars.length === 5) {
+                const uniqueChars = new Set(chars.split(''));
+                if (uniqueChars.size === 5) {
+                    for (let i = 0; i < 5; i++) {
+                        document.getElementById(`char${i}`).value = chars[i];
+                    }
+                }
+            }
+            
+            if (ciphertext) {
+                document.getElementById('inputText').value = ciphertext;
+                if (key) document.getElementById('key').value = key;
+                if (mode) document.getElementById('mode').value = mode;
+                // 自动解密
+                setTimeout(decrypt, 500);
+            } else if (plaintext) {
+                document.getElementById('inputText').value = plaintext;
+                if (key) document.getElementById('key').value = key;
+                if (mode) document.getElementById('mode').value = mode;
+                // 自动加密
+                setTimeout(encrypt, 500);
+            }
+        });
+        
+        // 加密函数
+        function encrypt() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            let key = document.getElementById('key').value;
+            const makaChars = getMakaChars();
+            
+            if (!inputText) {
+                alert('请输入要加密的文本！');
+                return;
+            }
+            
+            if (mode === 'custom' && !key) {
+                alert('密钥模式下需要输入密钥！');
+                return;
+            }
+            
+            // 如果没有提供密钥，使用默认密钥
+            if (!key) key = DEFAULT_KEY;
+            
+            let output = '';
+            
+            if (mode === 'default') {
+                output = defaultEncrypt(inputText, makaChars);
+            } else {
+                output = customEncrypt(inputText, key, makaChars);
+            }
+            
+            document.getElementById('outputText').textContent = output;
+            document.getElementById('urlOutput').style.display = 'none';
+        }
+        
+        // 解密函数
+        function decrypt() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            let key = document.getElementById('key').value;
+            const makaChars = getMakaChars();
+            
+            if (!inputText) {
+                alert('请输入要解密的文本！');
+                return;
+            }
+            
+            if (mode === 'custom' && !key) {
+                alert('密钥模式下需要输入密钥！');
+                return;
+            }
+            
+            // 如果没有提供密钥，使用默认密钥
+            if (!key) key = DEFAULT_KEY;
+            
+            let output = '';
+            
+            if (mode === 'default') {
+                output = defaultDecrypt(inputText, makaChars);
+            } else {
+                output = customDecrypt(inputText, key, makaChars);
+            }
+            
+            document.getElementById('outputText').textContent = output;
+            document.getElementById('urlOutput').style.display = 'none';
+        }
+        
+        // 生成分享URL
+        function generateURL() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            const key = document.getElementById('key').value;
+            const outputText = document.getElementById('outputText').textContent;
+            const makaChars = getMakaChars();
+            
+            if (!inputText) {
+                alert('没有内容可分享！');
+                return;
+            }
+            
+            const baseURL = window.location.origin + window.location.pathname;
+            let url;
+            
+            // 判断当前内容是明文还是密文
+            const isCipherText = new RegExp(`^[\\s${makaChars.join('')}]+$`).test(inputText);
+            
+            if (isCipherText) {
+                // 当前输入是密文
+                url = `${baseURL}?ciphertext=${encodeURIComponent(inputText)}`;
+            } else {
+                // 当前输入是明文
+                url = `${baseURL}?plaintext=${encodeURIComponent(inputText)}`;
+            }
+            
+            if (key) {
+                url += `&key=${encodeURIComponent(key)}`;
+            }
+            
+            if (mode && mode !== 'default') {
+                url += `&mode=${encodeURIComponent(mode)}`;
+            }
+            
+            // 添加自定义字符参数（如果不是默认字符）
+            if (JSON.stringify(makaChars) !== JSON.stringify(DEFAULT_MAKA_CHARS)) {
+                url += `&char=${encodeURIComponent(makaChars.join(''))}`;
+            }
+            
+            document.getElementById('generatedURL').textContent = url;
+            document.getElementById('urlOutput').style.display = 'block';
+        }
+        
+        // 默认加密方式
+        function defaultEncrypt(text, makaChars) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                // 将字符编码转换为玛卡巴卡字符序列
+                let encoded = charCode.toString(makaChars.length);
+                let makaStr = '';
+                for (let j = 0; j < encoded.length; j++) {
+                    const digit = parseInt(encoded[j], makaChars.length);
+                    makaStr += makaChars[digit];
+                }
+                result += makaStr + ' ';
+            }
+            return result.trim();
+        }
+        
+        // 默认解密方式
+        function defaultDecrypt(text, makaChars) {
+            const makaWords = text.split(' ');
+            let result = '';
+            
+            for (let i = 0; i < makaWords.length; i++) {
+                const word = makaWords[i];
+                if (!word) continue;
+                
+                let codeStr = '';
+                for (let j = 0; j < word.length; j++) {
+                    const char = word[j];
+                    const index = makaChars.indexOf(char);
+                    if (index === -1) {
+                        // 如果遇到非玛卡巴卡字符，直接添加到结果中
+                        codeStr += char;
+                    } else {
+                        codeStr += index.toString(makaChars.length);
+                    }
+                }
+                
+                const charCode = parseInt(codeStr, makaChars.length);
+                result += String.fromCharCode(charCode);
+            }
+            
+            return result;
+        }
+        
+        // 自定义密钥加密
+        function customEncrypt(text, key, makaChars) {
+            // 将密钥转换为数字序列
+            const keyCodes = [];
+            for (let i = 0; i < key.length; i++) {
+                keyCodes.push(key.charCodeAt(i));
+            }
+            
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                // 使用密钥进行异或加密
+                const keyIndex = i % keyCodes.length;
+                const encryptedCode = charCode ^ keyCodes[keyIndex];
+                
+                // 将加密后的编码转换为玛卡巴卡字符序列
+                let encoded = encryptedCode.toString(makaChars.length);
+                let makaStr = '';
+                for (let j = 0; j < encoded.length; j++) {
+                    const digit = parseInt(encoded[j], makaChars.length);
+                    makaStr += makaChars[digit];
+                }
+                result += makaStr + ' ';
+            }
+            return result.trim();
+        }
+        
+        // 自定义密钥解密
+        function customDecrypt(text, key, makaChars) {
+            // 将密钥转换为数字序列
+            const keyCodes = [];
+            for (let i = 0; i < key.length; i++) {
+                keyCodes.push(key.charCodeAt(i));
+            }
+            
+            const makaWords = text.split(' ');
+            let result = '';
+            
+            for (let i = 0; i < makaWords.length; i++) {
+                const word = makaWords[i];
+                if (!word) continue;
+                
+                let codeStr = '';
+                for (let j = 0; j < word.length; j++) {
+                    const char = word[j];
+                    const index = makaChars.indexOf(char);
+                    if (index === -1) {
+                        // 如果遇到非玛卡巴卡字符，直接添加到结果中
+                        codeStr += char;
+                    } else {
+                        codeStr += index.toString(makaChars.length);
+                    }
+                }
+                
+                const encryptedCode = parseInt(codeStr, makaChars.length);
+                // 使用密钥进行异或解密
+                const keyIndex = i % keyCodes.length;
+                const decryptedCode = encryptedCode ^ keyCodes[keyIndex];
+                result += String.fromCharCode(decryptedCode);
+            }
+            
+            return result;
+        }
+    </script>
+</body>
+</html>
