@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加密解密器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: 333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main {
+            padding: 30px;
+        }
+        
+        .input-group, .output-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            padding-right: 45px;
+        }
+        
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #2575fc;
+        }
+        
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .option {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .encrypt-btn {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+        }
+        
+        .decrypt-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+        
+        .url-btn {
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .output {
+            background-color: #f8f9fa;
+            min-height: 120px;
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            padding-right: 45px;
+        }
+        
+        .url-output {
+            background-color: #e8f4fc;
+            font-size: 0.9rem;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        
+        .base-info {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #6a11cb;
+            font-weight: bold;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #2575fc;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .instructions code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .validation-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        .validation-info ul {
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .options {
+                flex-direction: column;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .base-settings {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .base-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+
+        /* 自定义进制设置样式 */
+        .base-settings {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+        
+        .base-setting-item {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .base-input {
+            width: 100% !important;
+            text-align: center;
+            padding: 12px !important;
+            font-size: 1.1rem !important;
+            height: 50px;
+        }
+        
+        .chars-input {
+            width: 100% !important;
+            text-align: center;
+            padding: 12px !important;
+            font-size: 1.1rem !important;
+            height: 50px;
+        }
+        
+        .separator-input {
+            width: 100% !important;
+            text-align: center;
+            padding: 12px !important;
+            font-size: 1.1rem !important;
+            height: 50px;
+        }
+        
+        .reset-base {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .reset-base:hover {
+            background: #2575fc;
+            transform: translateY(-2px);
+        }
+        
+        .base-label {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 5px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .base-option {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+        
+        /* 调整字符输入框宽度 */
+        .chars-container {
+            flex: 2;
+            min-width: 200px;
+        }
+        
+        .separator-container {
+            flex: 1;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>加密解密器</h1>
+            <div class="subtitle">支持2-16进制编码，可自定义字符集和分隔符 作者：ZZX</div>
+        </header>
+        
+        <div class="main">
+            <div class="input-group">
+                <label for="inputText">输入文本（支持中英文等所有语言）:</label>
+                <textarea id="inputText" placeholder="请输入要加密或解密的文本..."></textarea>
+                <button class="copy-btn" onclick="copyInputText()">复制</button>
+            </div>
+            
+            <div class="options">
+                <div class="option">
+                    <label for="key">密钥（可选）:</label>
+                    <input type="text" id="key" placeholder="输入自定义密钥（可选）">
+                </div>
+                <div class="option">
+                    <label for="mode">模式:</label>
+                    <select id="mode" style="padding: 12px; font-size: 1.1rem; height: 50px; border-radius: 10px;">
+                        <option value="default">默认编译</option>
+                        <option value="custom">密钥编译</option>
+                    </select>
+                </div>
+                <div class="option base-option">
+                    <label>自定义设置:</label>
+                    <div class="base-settings">
+                        <div class="base-setting-item">
+                            <input type="number" id="baseNumber" min="2" max="16" value="7" class="base-input">
+                            <div class="base-label">进制数</div>
+                        </div>
+                        <div class="base-setting-item separator-container">
+                            <input type="text" id="separatorChar" maxlength="1" value=" " class="separator-input" oninput="validateChars()">
+                            <div class="base-label">分隔符</div>
+                        </div>
+                        <div class="base-setting-item chars-container">
+                            <input type="text" id="baseChars" maxlength="16" value="玛卡巴咔哈基米" class="chars-input" oninput="validateChars()">
+                            <div class="base-label">编码字符</div>
+                        </div>
+                    </div>
+                    <div id="validationInfo" class="validation-info" style="display: none;"></div>
+                    <button class="reset-base" onclick="resetBaseSettings()">重置为默认设置</button>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="encrypt-btn" onclick="encrypt()">加密</button>
+                <button class="decrypt-btn" onclick="decrypt()">解密</button>
+                <button class="url-btn" onclick="generateURL()">生成分享URL</button>
+            </div>
+            
+            <div class="output-group">
+                <label for="outputText">结果:</label>
+                <div id="outputText" class="output">加密或解密后的文本将显示在这里...</div>
+                <button class="copy-btn" onclick="copyOutputText()">复制</button>
+                
+                <div id="urlOutput" class="url-output" style="display: none;">
+                    <strong>分享URL:</strong> <span id="generatedURL"></span>
+                </div>
+            </div>
+            
+            <div class="base-info">
+                <span>当前进制: <span id="currentBase">7</span></span>
+                <span>字符集: <span id="currentChars">玛卡巴咔哈基米</span></span>
+                <span>分隔符: <span id="currentSeparator">空格</span></span>
+            </div>
+            
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ul>
+                    <li>输入任何语言的文本（中文、英文等）</li>
+                    <li>选择使用默认编译或密钥编译方式</li>
+                    <li>点击"加密"按钮进行加密</li>
+                    <li>点击"解密"按钮进行解密</li>
+                    <li>密钥可以是任何语言的文本，注意请选择密钥模式</li>
+                    <li>支持2-16进制编码，可自定义字符集和分隔符</li>
+                    <li>字符集长度不足时，会自动用数字/字母补充</li>
+                    <li>系统会自动检测并修复字符重复和冲突问题</li>
+                    <li>系统会把大于16或小于2的进制数自动视作16或2</li>
+                    <li>支持URL参数：
+                        <ul>
+                            <li><code>ciphertext='xxx'</code> - 直接加载密文</li>
+                            <li><code>plaintext='xxx'</code> - 直接加载明文</li>
+                            <li><code>key='xxx'</code> - 设置密钥</li>
+                            <li><code>mode='default'</code> 或 <code>mode='custom'</code> - 设置模式</li>
+                            <li><code>base='x'</code> - 设置进制数（2-16）</li>
+                            <li><code>chars='xxx'</code> - 设置编码字符</li>
+                            <li><code>separator='x'</code> - 设置分隔符</li>
+                        </ul>
+                    </li>
+                    <li>作者：ZZX</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
+
+    <script>
+        // 默认设置
+        const DEFAULT_BASE = 6;
+        const DEFAULT_CHARS = '玛卡巴哈基米';
+        const DEFAULT_SEPARATOR = ' ';
+        const DEFAULT_KEY = '加密密钥';
+        
+        // 分隔符库（17个字符）
+        const SEPARATOR_LIBRARY = [' ', '\\', '?', '!', '@', '&', '#', '$', '%', '^', '*', '+', '-', '.', '<', '>', '='];
+        
+        // 字符库（17个字符）
+        const CHAR_LIBRARY = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        
+        // 获取当前进制设置
+        function getBaseSettings() {
+            let base = parseInt(document.getElementById('baseNumber').value) || DEFAULT_BASE;
+            base = Math.max(2, Math.min(16, base)); // 限制在2-16范围内
+            
+            let chars = document.getElementById('baseChars').value;
+            let separator = document.getElementById('separatorChar').value || DEFAULT_SEPARATOR;
+            
+            // 验证并修复字符设置
+            const validationResult = validateAndFixChars(chars, separator, base);
+            chars = validationResult.chars;
+            separator = validationResult.separator;
+            
+            // 更新输入框
+            document.getElementById('baseChars').value = chars;
+            document.getElementById('separatorChar').value = separator;
+            
+            // 显示验证信息
+            showValidationInfo(validationResult);
+            
+            // 确保字符集长度足够，不足时用字符库补充
+            if (chars.length < base) {
+                const availableChars = getAvailableChars(chars, separator);
+                for (let i = chars.length; i < base; i++) {
+                    if (availableChars.length > 0) {
+                        chars += availableChars.shift();
+                    } else {
+                        // 如果字符库用尽，使用默认字符
+                        chars += String.fromCharCode(65 + i - 10); // A, B, C, ...
+                    }
+                }
+            } else if (chars.length > base) {
+                chars = chars.substring(0, base);
+            }
+            
+            // 更新显示
+            document.getElementById('currentBase').textContent = base;
+            document.getElementById('currentChars').textContent = chars;
+            document.getElementById('currentSeparator').textContent = separator === ' ' ? '空格' : separator;
+            
+            return { base, chars: chars.split(''), separator };
+        }
+        
+        // 验证字符设置
+        function validateChars() {
+            const base = parseInt(document.getElementById('baseNumber').value) || DEFAULT_BASE;
+            let chars = document.getElementById('baseChars').value;
+            let separator = document.getElementById('separatorChar').value || DEFAULT_SEPARATOR;
+            
+            const validationResult = validateAndFixChars(chars, separator, base);
+            
+            // 显示验证信息
+            showValidationInfo(validationResult);
+        }
+        
+        // 验证并修复字符设置
+        function validateAndFixChars(chars, separator, base) {
+            const issues = [];
+            const fixedChars = chars.split('');
+            let fixedSeparator = separator;
+            
+            // 检查重复字符
+            const charSet = new Set();
+            const duplicates = new Set();
+            
+            for (let i = 0; i < fixedChars.length; i++) {
+                if (charSet.has(fixedChars[i])) {
+                    duplicates.add(fixedChars[i]);
+                }
+                charSet.add(fixedChars[i]);
+            }
+            
+            // 检查分隔符是否在字符集中
+            if (fixedChars.includes(separator)) {
+                issues.push(`分隔符 "${separator}" 不能在编码字符中出现`);
+                
+                // 修复：从字符库中找可用的分隔符
+                const availableSeparators = SEPARATOR_LIBRARY.filter(s => !fixedChars.includes(s));
+                if (availableSeparators.length > 0) {
+                    fixedSeparator = availableSeparators[0];
+                    issues.push(`分隔符已自动替换为: "${fixedSeparator}"`);
+                }
+            }
+            
+            // 修复重复字符
+            if (duplicates.size > 0) {
+                issues.push(`发现重复字符: ${Array.from(duplicates).join(', ')}`);
+                
+                const availableChars = getAvailableChars(fixedChars.join(''), fixedSeparator);
+                for (let i = 0; i < fixedChars.length; i++) {
+                    if (duplicates.has(fixedChars[i]) && availableChars.length > 0) {
+                        fixedChars[i] = availableChars.shift();
+                        issues.push(`重复字符已替换为: "${fixedChars[i]}"`);
+                    }
+                }
+            }
+            
+            // 检查字符数量是否足够
+            if (fixedChars.length < base) {
+                issues.push(`需要 ${base} 个编码字符，当前只有 ${fixedChars.length} 个`);
+            }
+            
+            return {
+                chars: fixedChars.join(''),
+                separator: fixedSeparator,
+                issues: issues,
+                hasIssues: issues.length > 0
+            };
+        }
+        
+        // 获取可用的字符
+        function getAvailableChars(currentChars, separator) {
+            const usedChars = new Set([...currentChars, separator]);
+            return CHAR_LIBRARY.filter(char => !usedChars.has(char));
+        }
+        
+        // 显示验证信息
+        function showValidationInfo(validationResult) {
+            const validationInfo = document.getElementById('validationInfo');
+            
+            if (validationResult.hasIssues) {
+                validationInfo.style.display = 'block';
+                validationInfo.innerHTML = `
+                    <strong>字符验证信息:</strong>
+                    <ul>
+                        ${validationResult.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                validationInfo.style.display = 'none';
+                validationInfo.innerHTML = '';
+            }
+        }
+        
+        // 重置为默认设置
+        function resetBaseSettings() {
+            document.getElementById('baseNumber').value = DEFAULT_BASE;
+            document.getElementById('baseChars').value = DEFAULT_CHARS;
+            document.getElementById('separatorChar').value = DEFAULT_SEPARATOR;
+            document.getElementById('validationInfo').style.display = 'none';
+            getBaseSettings(); // 更新显示
+        }
+        
+        // 显示提示信息
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 复制输入框文本
+        function copyInputText() {
+            const inputText = document.getElementById('inputText');
+            inputText.select();
+            
+            try {
+                navigator.clipboard.writeText(inputText.value).then(() => {
+                    showToast('已复制文本到剪贴板');
+                });
+            } catch (err) {
+                document.execCommand('copy');
+                showToast('已复制文本到剪贴板');
+            }
+        }
+        
+        // 复制输出框文本
+        function copyOutputText() {
+            const outputText = document.getElementById('outputText');
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = outputText.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                navigator.clipboard.writeText(tempTextArea.value).then(() => {
+                    showToast('已复制文本到剪贴板');
+                });
+            } catch (err) {
+                document.execCommand('copy');
+                showToast('已复制文本到剪贴板');
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+        
+        // 页面加载时解析URL参数
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const ciphertext = urlParams.get('ciphertext');
+            const plaintext = urlParams.get('plaintext');
+            const key = urlParams.get('key');
+            const mode = urlParams.get('mode');
+            const base = urlParams.get('base');
+            const chars = urlParams.get('chars');
+            const separator = urlParams.get('separator');
+            
+            // 处理进制设置参数
+            if (base && base >= 2 && base <= 16) {
+                document.getElementById('baseNumber').value = base;
+            }
+            if (chars) {
+                document.getElementById('baseChars').value = chars;
+            }
+            if (separator) {
+                document.getElementById('separatorChar').value = separator;
+            }
+            
+            // 更新显示
+            getBaseSettings();
+            
+            if (ciphertext) {
+                document.getElementById('inputText').value = ciphertext;
+                if (key) document.getElementById('key').value = key;
+                if (mode) document.getElementById('mode').value = mode;
+                setTimeout(decrypt, 500);
+            } else if (plaintext) {
+                document.getElementById('inputText').value = plaintext;
+                if (key) document.getElementById('key').value = key;
+                if (mode) document.getElementById('mode').value = mode;
+                setTimeout(encrypt, 500);
+            }
+        });
+        
+        // 加密函数
+        function encrypt() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            let key = document.getElementById('key').value;
+            const { base, chars, separator } = getBaseSettings();
+            
+            if (!inputText) {
+                alert('请输入要加密的文本！');
+                return;
+            }
+            
+            if (mode === 'custom' && !key) {
+                alert('密钥模式下需要输入密钥！');
+                return;
+            }
+            
+            if (!key) key = DEFAULT_KEY;
+            
+            let output = '';
+            
+            if (mode === 'default') {
+                output = defaultEncrypt(inputText, base, chars, separator);
+            } else {
+                output = customEncrypt(inputText, key, base, chars, separator);
+            }
+            
+            document.getElementById('outputText').textContent = output;
+            document.getElementById('urlOutput').style.display = 'none';
+        }
+        
+        // 解密函数
+        function decrypt() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            let key = document.getElementById('key').value;
+            const { base, chars, separator } = getBaseSettings();
+            
+            if (!inputText) {
+                alert('请输入要解密的文本！');
+                return;
+            }
+            
+            if (mode === 'custom' && !key) {
+                alert('密钥模式下需要输入密钥！');
+                return;
+            }
+            
+            if (!key) key = DEFAULT_KEY;
+            
+            let output = '';
+            
+            if (mode === 'default') {
+                output = defaultDecrypt(inputText, base, chars, separator);
+            } else {
+                output = customDecrypt(inputText, key, base, chars, separator);
+            }
+            
+            document.getElementById('outputText').textContent = output;
+            document.getElementById('urlOutput').style.display = 'none';
+        }
+        
+        // 生成分享URL
+        function generateURL() {
+            const inputText = document.getElementById('inputText').value;
+            const mode = document.getElementById('mode').value;
+            const key = document.getElementById('key').value;
+            const { base, chars, separator } = getBaseSettings();
+            
+            if (!inputText) {
+                alert('没有内容可分享！');
+                return;
+            }
+            
+            const baseURL = window.location.origin + window.location.pathname;
+            let url;
+            
+            // 判断当前内容是明文还是密文
+            const isCipherText = isEncodedText(inputText, chars.join(''), separator);
+            
+            if (isCipherText) {
+                url = `${baseURL}?ciphertext=${encodeURIComponent(inputText)}`;
+            } else {
+                url = `${baseURL}?plaintext=${encodeURIComponent(inputText)}`;
+            }
+            
+            if (key) {
+                url += `&key=${encodeURIComponent(key)}`;
+            }
+            
+            if (mode && mode !== 'default') {
+                url += `&mode=${encodeURIComponent(mode)}`;
+            }
+            
+            // 添加进制设置参数
+            if (base !== DEFAULT_BASE) {
+                url += `&base=${encodeURIComponent(base)}`;
+            }
+            if (chars.join('') !== DEFAULT_CHARS) {
+                url += `&chars=${encodeURIComponent(chars.join(''))}`;
+            }
+            if (separator !== DEFAULT_SEPARATOR) {
+                url += `&separator=${encodeURIComponent(separator)}`;
+            }
+            
+            document.getElementById('generatedURL').textContent = url;
+            document.getElementById('urlOutput').style.display = 'block';
+        }
+        
+        // 检查文本是否为编码文本
+        function isEncodedText(text, chars, separator) {
+            const allowedChars = new Set([...chars, separator]);
+            for (let i = 0; i < text.length; i++) {
+                if (!allowedChars.has(text[i])) {
+                    return false;
+                }
+            }
+            return text.length > 0;
+        }
+        
+        // 默认加密方式
+        function defaultEncrypt(text, base, chars, separator) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                // 将字符编码转换为指定进制的字符串
+                const baseStr = charCode.toString(base);
+                
+                // 将进制字符串转换为自定义字符
+                let encodedStr = '';
+                for (let j = 0; j < baseStr.length; j++) {
+                    const digit = parseInt(baseStr[j], base);
+                    encodedStr += chars[digit];
+                }
+                
+                // 添加分隔符
+                result += encodedStr;
+                if (i < text.length - 1) {
+                    result += separator;
+                }
+            }
+            return result;
+        }
+        
+        // 默认解密方式
+        function defaultDecrypt(text, base, chars, separator) {
+            let result = '';
+            const segments = text.split(separator);
+            
+            for (let i = 0; i < segments.length; i++) {
+                const segment = segments[i];
+                if (!segment) continue;
+                
+                // 将自定义字符转换回进制字符串
+                let baseStr = '';
+                for (let j = 0; j < segment.length; j++) {
+                    const char = segment[j];
+                    const index = chars.indexOf(char);
+                    if (index !== -1) {
+                        baseStr += index.toString(base);
+                    }
+                }
+                
+                // 将进制字符串转换为字符编码
+                if (baseStr) {
+                    const charCode = parseInt(baseStr, base);
+                    result += String.fromCharCode(charCode);
+                }
+            }
+            
+            return result;
+        }
+        
+        // 自定义密钥加密
+        function customEncrypt(text, key, base, chars, separator) {
+            const keyCodes = [];
+            for (let i = 0; i < key.length; i++) {
+                keyCodes.push(key.charCodeAt(i));
+            }
+            
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                const keyIndex = i % keyCodes.length;
+                const encryptedCode = charCode ^ keyCodes[keyIndex];
+                
+                const baseStr = encryptedCode.toString(base);
+                let encodedStr = '';
+                for (let j = 0; j < baseStr.length; j++) {
+                    const digit = parseInt(baseStr[j], base);
+                    encodedStr += chars[digit];
+                }
+                
+                result += encodedStr;
+                if (i < text.length - 1) {
+                    result += separator;
+                }
+            }
+            return result;
+        }
+        
+        // 自定义密钥解密
+        function customDecrypt(text, key, base, chars, separator) {
+            const keyCodes = [];
+            for (let i = 0; i < key.length; i++) {
+                keyCodes.push(key.charCodeAt(i));
+            }
+            
+            let result = '';
+            const segments = text.split(separator);
+            
+            for (let i = 0; i < segments.length; i++) {
+                const segment = segments[i];
+                if (!segment) continue;
+                
+                let baseStr = '';
+                for (let j = 0; j < segment.length; j++) {
+                    const char = segment[j];
+                    const index = chars.indexOf(char);
+                    if (index !== -1) {
+                        baseStr += index.toString(base);
+                    }
+                }
+                
+                if (baseStr) {
+                    const encryptedCode = parseInt(baseStr, base);
+                    const keyIndex = i % keyCodes.length;
+                    const decryptedCode = encryptedCode ^ keyCodes[keyIndex];
+                    result += String.fromCharCode(decryptedCode);
+                }
+            }
+            
+            return result;
+        }
+        
+        // 初始化显示
+        getBaseSettings();
+    </script>
+</body>
+</html>
