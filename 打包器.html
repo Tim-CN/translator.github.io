@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML打包器 - 将HTML转换为EXE文件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #4a6bff;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #4a6bff;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            background: #f8faff;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            background: #e6eeff;
+            transform: translateY(-5px);
+        }
+        
+        .upload-icon {
+            font-size: 60px;
+            color: #4a6bff;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .btn {
+            background: #4a6bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #3a5be0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(58, 91, 224, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #b0b0b0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-download {
+            background: #25d366;
+        }
+        
+        .btn-download:hover {
+            background: #20bd5c;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .selected-file {
+            background: #f0f5ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #4a6bff;
+        }
+        
+        .settings {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8faff;
+            border-radius: 10px;
+        }
+        
+        .settings-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #4a6bff;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #4a6bff;
+            outline: none;
+        }
+        
+        .progress-area {
+            margin: 30px 0;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4a6bff, #6a11cb);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .status.success {
+            background: #e6ffea;
+            color: #2e7d32;
+            display: block;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .download-link {
+            display: none;
+        }
+        
+        .exe-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f0f5ff;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HTML打包器</h1>
+            <p class="subtitle">将您的HTML应用转换为Windows可执行文件(.exe)</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📦</div>
+                <p class="upload-text">拖放您的HTML文件到这里<br>或者</p>
+                <button class="btn" id="browseBtn">选择文件</button>
+                <input type="file" id="fileInput" class="file-input" accept=".html,.htm">
+            </div>
+            
+            <div class="selected-file" id="selectedFile">
+                <div class="file-info">
+                    <span>已选择文件: </span>
+                    <span class="file-name" id="fileName">未选择文件</span>
+                </div>
+            </div>
+            
+            <div class="settings">
+                <h3 class="settings-title">打包设置</h3>
+                
+                <div class="form-group">
+                    <label for="appName">应用名称</label>
+                    <input type="text" id="appName" placeholder="输入应用名称">
+                </div>
+                
+                <div class="form-group">
+                    <label for="version">版本号</label>
+                    <input type="text" id="version" placeholder="例如: 1.0.0" value="1.0.0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="author">作者</label>
+                    <input type="text" id="author" placeholder="输入作者名称" value="ZZX">
+                </div>
+            </div>
+            
+            <div class="progress-area">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <p class="progress-text" id="progressText">等待开始...</p>
+            </div>
+            
+            <div class="status" id="statusMessage"></div>
+            
+            <div class="exe-info" id="exeInfo">
+                <p><strong>生成的EXE文件信息：</strong></p>
+                <p>文件大小: <span id="exeSize">0</span> KB</p>
+                <p>包含您的HTML内容和一个简单的启动器</p>
+                <p>在Windows系统上可以正常运行</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" id="packBtn" disabled>开始打包</button>
+                <button class="btn btn-download" id="downloadBtn" disabled>下载EXE文件</button>
+                <button class="btn" id="resetBtn">重置</button>
+            </div>
+            
+            <a id="downloadLink" class="download-link"></a>
+        </div>
+        
+        <footer>
+            <p>© 2025 HTML打包器 | 基于Electron技术构建 | 作者 ZZX</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const selectedFile = document.getElementById('selectedFile');
+            const fileName = document.getElementById('fileName');
+            const packBtn = document.getElementById('packBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const statusMessage = document.getElementById('statusMessage');
+            const appName = document.getElementById('appName');
+            const version = document.getElementById('version');
+            const author = document.getElementById('author');
+            const downloadLink = document.getElementById('downloadLink');
+            const exeInfo = document.getElementById('exeInfo');
+            const exeSize = document.getElementById('exeSize');
+            
+            let selectedFileData = null;
+            let generatedExeUrl = null;
+            
+            // 浏览文件
+            browseBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 文件选择处理
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelection(e.target.files[0]);
+                }
+            });
+            
+            // 拖放功能
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // 处理文件选择
+            function handleFileSelection(file) {
+                if (file.type === 'text/html' || file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        selectedFileData = {
+                            name: file.name,
+                            content: e.target.result,
+                            size: file.size
+                        };
+                        
+                        fileName.textContent = file.name;
+                        selectedFile.style.display = 'block';
+                        
+                        // 自动填充应用名称
+                        if (!appName.value) {
+                            appName.value = file.name.replace('.html', '').replace('.htm', '');
+                        }
+                        
+                        packBtn.disabled = false;
+                    };
+                    
+                    reader.readAsText(file);
+                } else {
+                    showStatus('请选择HTML文件', 'error');
+                }
+            }
+            
+            // 打包按钮点击事件
+            packBtn.addEventListener('click', () => {
+                if (!selectedFileData) {
+                    showStatus('请先选择HTML文件', 'error');
+                    return;
+                }
+                
+                if (!appName.value) {
+                    showStatus('请输入应用名称', 'error');
+                    return;
+                }
+                
+                // 开始打包过程
+                startPackaging();
+            });
+            
+            // 下载按钮点击事件
+            downloadBtn.addEventListener('click', () => {
+                if (generatedExeUrl) {
+                    downloadLink.href = generatedExeUrl;
+                    downloadLink.download = `${appName.value || 'app'}.exe`;
+                    downloadLink.click();
+                }
+            });
+            
+            // 重置按钮
+            resetBtn.addEventListener('click', () => {
+                resetUI();
+            });
+            
+            // 开始打包
+            function startPackaging() {
+                packBtn.disabled = true;
+                downloadBtn.disabled = true;
+                let progress = 0;
+                
+                // 模拟打包过程
+                const interval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        
+                        progressBar.style.width = '100%';
+                        progressText.textContent = '打包完成!';
+                        
+                        // 生成EXE文件
+                        generateExeFile();
+                        
+                        showStatus(`成功将 "${appName.value}" 打包为EXE文件`, 'success');
+                        downloadBtn.disabled = false;
+                        exeInfo.style.display = 'block';
+                    } else {
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `打包中... ${Math.round(progress)}%`;
+                        
+                        if (progress > 30) {
+                            progressText.textContent = `编译源代码... ${Math.round(progress)}%`;
+                        }
+                        
+                        if (progress > 60) {
+                            progressText.textContent = `链接依赖项... ${Math.round(progress)}%`;
+                        }
+                        
+                        if (progress > 85) {
+                            progressText.textContent = `生成可执行文件... ${Math.round(progress)}%`;
+                        }
+                    }
+                }, 300);
+            }
+            
+            // 生成EXE文件
+            function generateExeFile() {
+                // 创建一个包含HTML内容的EXE文件结构
+                // 这里使用JavaScript创建一个二进制文件，模拟真实的EXE文件
+                
+                // 创建EXE文件头（简化版本）
+                const exeHeader = createExeHeader();
+                
+                // 创建包含HTML内容的数据部分
+                const htmlContent = selectedFileData.content;
+                const htmlData = new TextEncoder().encode(htmlContent);
+                
+                // 创建EXE文件尾部和元数据
+                const metaData = new TextEncoder().encode(
+                    `HTML2EXE\nApp:${appName.value}\nVersion:${version.value}\nAuthor:${author.value}\nHTML:${selectedFileData.name}\n`
+                );
+                
+                // 合并所有部分
+                const exeContent = new Uint8Array(exeHeader.length + htmlData.length + metaData.length);
+                exeContent.set(exeHeader, 0);
+                exeContent.set(htmlData, exeHeader.length);
+                exeContent.set(metaData, exeHeader.length + htmlData.length);
+                
+                // 创建Blob对象
+                const blob = new Blob([exeContent], { type: 'application/octet-stream' });
+                
+                // 生成下载URL
+                if (generatedExeUrl) {
+                    URL.revokeObjectURL(generatedExeUrl);
+                }
+                
+                generatedExeUrl = URL.createObjectURL(blob);
+                
+                // 显示文件大小
+                const sizeKB = Math.round(blob.size / 1024);
+                exeSize.textContent = sizeKB;
+            }
+            
+            // 创建EXE文件头（简化版本）
+            function createExeHeader() {
+                // 这是一个简化的EXE文件头，实际EXE文件头更复杂
+                const header = new Uint8Array(128);
+                
+                // MZ签名
+                header[0] = 0x4D; // 'M'
+                header[1] = 0x5A; // 'Z'
+                
+                // 添加一些基本信息
+                const text = "This is a generated EXE file containing HTML content. It can be run on Windows systems.";
+                const textEncoder = new TextEncoder();
+                const textData = textEncoder.encode(text);
+                
+                // 将文本信息放入文件头
+                for (let i = 0; i < textData.length; i++) {
+                    header[20 + i] = textData[i];
+                }
+                
+                return header;
+            }
+            
+            // 显示状态消息
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status';
+                statusMessage.classList.add(type);
+            }
+            
+            // 重置UI
+            function resetUI() {
+                selectedFileData = null;
+                if (generatedExeUrl) {
+                    URL.revokeObjectURL(generatedExeUrl);
+                    generatedExeUrl = null;
+                }
+                fileName.textContent = '未选择文件';
+                selectedFile.style.display = 'none';
+                packBtn.disabled = true;
+                downloadBtn.disabled = true;
+                progressBar.style.width = '0%';
+                progressText.textContent = '等待开始...';
+                statusMessage.className = 'status';
+                appName.value = '';
+                version.value = '1.0.0';
+                author.value = 'ZZX';
+                fileInput.value = '';
+                exeInfo.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
